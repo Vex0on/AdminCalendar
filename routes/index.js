@@ -3,6 +3,8 @@ const pool = require("../db");
 const app = express();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
+const helmet = require('helmet');
+app.use(helmet());
 app.use(express.json());
 
 var router = express.Router();
@@ -121,7 +123,7 @@ app.get("/events", async (req, res) => {
   res.send({ events });
 });
 
-const PORT = process.env.PORT || 6200;
+const PORT = process.env.PORT || 6300;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
