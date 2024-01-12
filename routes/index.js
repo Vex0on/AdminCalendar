@@ -11,10 +11,25 @@ var router = express.Router();
 require('dotenv').config();
 let SESSIONS = [];
 
+// Inicjalizacja SESSIONS danymi z bazy danych przy uruchamianiu serwera
+async function initializeSessions() {
+  try {
+    const result = await pool.query("SELECT refresh_token FROM sessions;");
+    SESSIONS = result.rows.map(row => row.refresh_token);
+    console.log('Initialized SESSIONS array:', SESSIONS);
+  } catch (error) {
+    console.error('Error initializing SESSIONS array:', error);
+  }
+}
+
+// Wywołanie funkcji inicjalizującej przy uruchomieniu serwera
+initializeSessions();
+
 const generateAccessToken = (user) => {
   return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-    'expiresIn:' :'1h'
-  }) 
+    expiresIn: '4h',
+    algorithm: 'HS256'
+  });
 }
 
 const validateToken = async (token, tokenSecret) => {
@@ -24,7 +39,7 @@ const validateToken = async (token, tokenSecret) => {
         throw (error)
       }
       return payload;
-    })
+    });
 }
 
 const validateAccessToken = async (req, res, next) => {
@@ -33,8 +48,7 @@ const validateAccessToken = async (req, res, next) => {
     next();
   }
   catch (error) {
-    res.status(401).
-      json({ error: error.message || 'Invalid access token' })
+    res.status(401).json({ error: error.message || 'Invalid access token' })
   }
 }
 
@@ -44,14 +58,12 @@ const validateRefreshToken = async (req, res, next) => {
     next();
   }
   catch (error) {
-    res.status(401).
-      json({ error: error.message || 'Invalid refresh token' })
+    res.status(401).json({ error: error.message || 'Invalid refresh token' })
   }
 }
 
 app.post("/register", async (req, res) => {
   const { username, password } = req.body;
-  console.log(req.body);
 
   try {
     const salt = await bcrypt.genSalt(12);
@@ -77,13 +89,15 @@ app.post("/login", async (req, res) => {
       const user = result.rows[0];
 
       if (await bcrypt.compare(password, user.password_hash)) {
-        const accessToken = jwt.sign({ username: user.username }, process.env.ACCESS_TOKEN_SECRET, {
-          expiresIn: '1h',
+        const accessToken = generateAccessToken({ username: user.username });
+
+        const refreshToken = jwt.sign({ username: user.username }, process.env.REFRESH_TOKEN_SECRET, {
+          expiresIn: '7d',
+          algorithm: 'HS256'
         });
 
-        const refreshToken = jwt.sign({ username: user.username }, process.env.REFRESH_TOKEN_SECRET);
-
         await pool.query("INSERT INTO sessions (refresh_token) VALUES ($1)", [refreshToken]);
+        SESSIONS.push(refreshToken);
 
         res.json({ accessToken, refreshToken });
         return;
@@ -99,19 +113,33 @@ app.post("/login", async (req, res) => {
 
 app.post('/token', validateRefreshToken, (req, res) => {
   const { username } = req.user;
-  if (SESSIONS.includes(req.body['refreshToken'])) {
-    res.json({ accessToken: generateAccessToken({ username })})
+  const refreshTokenFromBody = req.body['refreshToken'];
+  console.log('Received refreshTokenFromBody:', refreshTokenFromBody);
+  console.log('SESSIONS array:', SESSIONS);
+
+  if (SESSIONS.includes(refreshTokenFromBody)) {
+    res.json({ accessToken: generateAccessToken({ username }) });
+  } else {
+    res.status(403).json('Forbidden: refresh token is expired');
   }
-  else {
-    res.status(403).json('Forbidden: refresh token is expired')
-  }
-})
+});
 
 app.delete("/logout", async (req, res) => {
-  SESSIONS = SESSIONS.filter((session) => session != req.body['refreshToken']);
-  res.sendStatus(204);
-})
+  const refreshTokenFromBody = req.body['refreshToken'];
+  console.log('Before removing session, SESSIONS array:', SESSIONS);
 
+  try {
+    await pool.query("DELETE FROM sessions WHERE refresh_token = $1", [refreshTokenFromBody]);
+
+    SESSIONS = SESSIONS.filter((session) => session != refreshTokenFromBody);
+
+    console.log('After removing session, SESSIONS array:', SESSIONS);
+    res.sendStatus(204);
+  } catch (error) {
+    console.error('Error during logout:', error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 
 app.get("/", (req, res) => {
   res.send("Hello, World!");
