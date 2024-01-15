@@ -32,15 +32,15 @@ const generateRefreshToken = () => {
 };
 
 const register = async (req, res) => {
-  const { username, password } = req.body;
+  const { email, username, password } = req.body;
 
   try {
     const salt = await bcrypt.genSalt(12);
     const hash = await bcrypt.hash(password, salt);
 
     const result = await pool.query(
-      'INSERT INTO users (username, password_hash) VALUES ($1, $2) RETURNING *',
-      [username, hash]
+      'INSERT INTO users (email, username, password_hash) VALUES ($1, $2, $3) RETURNING *',
+      [email, username, hash]
     );
 
     console.log(result.rows[0]);
@@ -52,10 +52,10 @@ const register = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const { username, password } = req.body;
+  const { identifier, password } = req.body;
 
   try {
-    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+    const result = await pool.query('SELECT * FROM users WHERE email = $1 OR username = $1', [identifier]);
 
     if (result.rows.length === 1) {
       const user = result.rows[0];

@@ -47,6 +47,8 @@ router.use('/docs-ui', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { customSit
  *           schema:
  *             type: object
  *             properties:
+ *               email:
+ *                 type: string
  *               username:
  *                 type: string
  *               password:
@@ -54,10 +56,12 @@ router.use('/docs-ui', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { customSit
  *     responses:
  *       200:
  *         description: Successfully registered.
+ *       422:
+ *         description: Unprocessable Entity - Validation error.
  *       500:
  *         description: Internal Server Error.
  */
-router.post('/register', authController.register);
+router.post('/register', authMiddleware.ValidateRegistrationRules, authController.register);
 
 
 /**
@@ -65,7 +69,7 @@ router.post('/register', authController.register);
  * /login:
  *   post:
  *     summary: Log in
- *     description: Log in with a registered username and password.
+ *     description: Log in with a registered username or email and password.
  *     tags: [Authentication]
  *     requestBody:
  *       required: true
@@ -74,7 +78,7 @@ router.post('/register', authController.register);
  *           schema:
  *             type: object
  *             properties:
- *               username:
+ *               identifier:
  *                 type: string
  *               password:
  *                 type: string
@@ -86,7 +90,7 @@ router.post('/register', authController.register);
  *       500:
  *         description: Internal Server Error.
  */
-router.post('/login', authController.login);
+router.post('/login', authMiddleware.ValidateLoginRules, authController.login);
 
 /**
  * @swagger
