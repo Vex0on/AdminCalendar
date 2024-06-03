@@ -3,6 +3,7 @@ const pool = require("../db");
 const router = express.Router();
 const authController = require('../controllers/authController');
 const eventController = require('../controllers/eventController')
+const userController = require('../controllers/userController')
 const authMiddleware = require('../middleware/authMiddleware');
 const swaggerSpec = require('../swaggerConfig')
 const swaggerUi = require('swagger-ui-express');
@@ -25,7 +26,6 @@ require('dotenv').config();
  *               $ref: '#/components/schema'
  */
 
-// ... (kontynuacja komentarzy dla poszczególnych endpointów)
 router.get("/docs", (req, res) => {
   res.setHeader('Content-Type', 'application/json');
   res.send(swaggerSpec);
@@ -174,24 +174,7 @@ router.post('/forgot-password', authController.forgotPassword);
  */
 router.delete('/logout', authMiddleware.validateRefreshToken, authController.logout);
 
-/**
- * @swagger
- * /events:
- *   get:
- *     summary: Get all events
- *     description: Retrieve a list of all events.
- *     tags: [Events]
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       200:
- *         description: Successfully retrieved events.
- *       500:
- *         description: Internal Server Error.
- */
-router.get('/events', eventController.showEvents);
-
-// CREATE Event
+// EVENTS
 /**
  * @swagger
  * /events:
@@ -232,7 +215,23 @@ router.get('/events', eventController.showEvents);
  */
 router.post("/events", eventController.createEvent);
 
-// UPDATE Event
+/**
+ * @swagger
+ * /events:
+ *   get:
+ *     summary: Get all events
+ *     description: Retrieve a list of all events.
+ *     tags: [Events]
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved events.
+ *       500:
+ *         description: Internal Server Error.
+ */
+router.get('/events', eventController.showEvents);
+
 /**
  * @swagger
  * /events/{id}:
@@ -282,7 +281,6 @@ router.post("/events", eventController.createEvent);
  */
 router.put('/events/:id', eventController.updateEvent);
 
-// DELETE Event
 /**
  * @swagger
  * /events/{id}:
@@ -309,6 +307,41 @@ router.put('/events/:id', eventController.updateEvent);
  */
 router.delete('/events/:id', eventController.deleteEvent);
 
+/**
+ * @swagger
+ * /users:
+ *   post:
+ *     summary: Create a new user
+ *     description: Create a new user with the provided data.
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               firstname:
+ *                 type: string
+ *               lastname:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User created successfully.
+ *       500:
+ *         description: Internal Server Error.
+ */
+router.post('/users', userController.createUser);
 
 /**
  * @swagger
@@ -316,18 +349,146 @@ router.delete('/events/:id', eventController.deleteEvent);
  *   get:
  *     summary: Get all users
  *     description: Retrieve a list of all users.
- *     security:
- *       - BearerAuth: []
+ *     tags: [Users]
  *     responses:
  *       200:
  *         description: Successfully retrieved users.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   username:
+ *                     type: string
+ *                   email:
+ *                     type: string
+ *                   firstname:
+ *                     type: string
+ *                   lastname:
+ *                     type: string
+ *                   phone:
+ *                     type: string
+ *                   role:
+ *                     type: string
  *       500:
  *         description: Internal Server Error.
  */
-router.get("/users", async (req, res) => {
-  const result = await pool.query("SELECT email, username FROM users;");
-  const users = result.rows;
-  res.send({ users });
-})
+router.get('/users', userController.showUsers);
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   get:
+ *     summary: Get a user by ID
+ *     description: Retrieve a user by their ID.
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the user to retrieve
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: integer
+ *                 username:
+ *                   type: string
+ *                 email:
+ *                   type: string
+ *                 firstname:
+ *                   type: string
+ *                 lastname:
+ *                   type: string
+ *                 phone:
+ *                   type: string
+ *                 role:
+ *                   type: string
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Internal Server Error.
+ */
+router.get('/users/:id', userController.showUserById);
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   put:
+ *     summary: Update a user by ID
+ *     description: Update the details of an existing user by their ID.
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the user to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               firstname:
+ *                 type: string
+ *               lastname:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               role:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User updated successfully.
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Internal Server Error.
+ */
+router.put('/users/:id', userController.updateUser);
+
+/**
+ * @swagger
+ * /users/{id}:
+ *   delete:
+ *     summary: Delete a user by ID
+ *     description: Delete a user by their ID.
+ *     tags: [Users]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the user to delete
+ *     responses:
+ *       204:
+ *         description: User deleted successfully.
+ *       404:
+ *         description: User not found.
+ *       500:
+ *         description: Internal Server Error.
+ */
+router.delete('/users/:id', userController.deleteUser);
 
 module.exports = router;
