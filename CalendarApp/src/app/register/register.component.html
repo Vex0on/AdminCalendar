@@ -1,0 +1,20 @@
+<div class="register-form">
+  <h2>Rejestracja</h2>
+  <form (submit)="register()">
+    <div class="form-group">
+      <label for="email">E-mail</label>
+      <input type="text" id="email" name="email" required [(ngModel)]="registerData.email">
+    </div>
+    <div class="form-group">
+      <label for="username">Nazwa Użytkownika</label>
+      <input type="text" id="username" name="username" required [(ngModel)]="registerData.username">
+    </div>
+    <div class="form-group">
+      <label for="identifier">Hasło</label>
+      <input type="password" id="password" name="password" required [(ngModel)]="registerData.password">
+    </div>
+    <div class="form-group form-group-button">
+      <button type="submit">Utwórz konto</button>
+    </div>
+  </form>
+</div>
