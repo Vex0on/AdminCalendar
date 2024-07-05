@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  backend:
+    container_name: scheduler_backend
+    build:
+      context: ./
+    ports:
+      - "6300:6300"
+
+  client:
+    container_name: scheduler_client
+    build:
+      context: ../client 
+    ports:
+      - "4200:4200"
+    depends_on:
+      - backend
+
