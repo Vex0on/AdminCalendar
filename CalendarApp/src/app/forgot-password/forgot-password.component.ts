@@ -5,25 +5,23 @@ import { RouterLink } from '@angular/router';
 import { Router } from '@angular/router';
 
 @Component({
-  selector: 'app-register',
+  selector: 'app-forgot-password',
   standalone: true,
   imports: [FormsModule, HttpClientModule, RouterLink],
-  templateUrl: './register.component.html',
-  styleUrl: './register.component.css'
+  templateUrl: './forgot-password.component.html',
+  styleUrl: './forgot-password.component.css'
 })
-export class RegisterComponent {
-  registerData = {
+export class ForgotPasswordComponent {
+  forgotData = {
     email: '',
-    username: '',
-    password: ''
   };
 
   constructor(private http: HttpClient, private router: Router) {}
 
-  register() {
-    this.http.post<any>('http://localhost:6300/register', this.registerData).subscribe({
+  forgot() {
+    this.http.post<any>('http://localhost:6300/forgot-password', this.forgotData).subscribe({
       next: response => {
-        console.log('Registration successful', response);
+        console.log('Password reset sent', response);
         this.router.navigate(['/login']);
       },
       error: error => {

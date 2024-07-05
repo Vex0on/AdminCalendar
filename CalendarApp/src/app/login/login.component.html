@@ -9,9 +9,12 @@
       <label for="password">Hasło</label>
       <input type="password" id="password" name="password" required [(ngModel)]="loginData.password">
     </div>
+    <div class="form-group form-group-text">
+      <a routerLink="/forgot-password" class="forgot-text">Zapomniałem hasła</a>
+      <a routerLink="/register" class="login-text">Nie mam konta</a>
+    </div>
     <div class="form-group form-group-button">
       <button type="submit">Zaloguj</button>
-      <a routerLink="/register" class="login-text">Masz już konto?</a>
     </div>
   </form>
 </div>

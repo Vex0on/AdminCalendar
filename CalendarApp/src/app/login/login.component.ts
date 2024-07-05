@@ -1,7 +1,7 @@
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-login',
@@ -16,7 +16,7 @@ export class LoginComponent {
     password: ''
   };
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient, private router:Router) {}
 
   login() {
     this.http.post<any>('http://localhost:6300/login', this.loginData).subscribe({
@@ -24,6 +24,7 @@ export class LoginComponent {
         console.log('Login successful', response);
         localStorage.setItem('accessToken', response.accessToken);
         localStorage.setItem('refreshToken', response.refreshToken);
+        this.router.navigate(['/schedule']);
       },
       error: error => {
         console.error('Login error', error);
