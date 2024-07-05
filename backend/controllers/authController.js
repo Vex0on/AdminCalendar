@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const pool = require('../db');
 const authMiddleware = require('../middleware/authMiddleware');
 const { validationResult } = require('express-validator');
+const sendEmail = require('./mailer');
 
 let SESSIONS = [];
 
@@ -52,6 +53,7 @@ const register = async (req, res) => {
     );
 
     console.log(result.rows[0]);
+    await sendEmail(email, 'Rejestracja pomyślna','Utworzyłeś konto pomyślnie, musisz poczekać na weryfikację. Powinno to trwać nie dłużej niż 24h')
     res.json('Successfully registered');
   } catch (error) {
     console.error('Error during registration:', error);
@@ -128,7 +130,7 @@ const forgotPassword = async (req, res) => {
     const user = userResult.rows[0];
     const resetToken = generatePasswordResetToken(user);
 
-    // TODO: Send an email to the user with the resetToken and instructions
+    await sendEmail(email, 'Przypomnienie hasła', 'Zgłosiłeś prośbę o zmianę hasła, to Twoje nowe hasło.');
 
     return res.status(200).json({ message: 'Password reset instructions sent successfully.' });
   } catch (error) {
