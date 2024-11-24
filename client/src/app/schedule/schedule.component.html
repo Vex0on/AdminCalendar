@@ -1,1 +1,23 @@
-<p>schedule works!</p>
+<div class="schedule">
+    <h1>Slots for June 2024</h1>
+    <div class="slots-container">
+      <div *ngFor="let slot of slots" class="slot-box">
+        <p><strong>Date:</strong> {{ slot.slot_date | date }}</p>
+        <p><strong>Max Capacity:</strong> {{ slot.max_capacity }}</p>
+        <p><strong>Reserved Users:</strong> {{ slot.users.length }} / {{ slot.max_capacity }}</p>
+        <p><strong>Users:</strong></p>
+        <ul>
+          <li *ngFor="let user of slot.users">
+            {{ user.username }} (ID: {{ user.id }})
+          </li>
+        </ul>
+        <p><strong>Comments:</strong></p>
+        <ul>
+          <li *ngFor="let userId of slot.user_ids">
+            {{ userId }}: {{ slot.comments[userId] || 'No comment' }}
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  

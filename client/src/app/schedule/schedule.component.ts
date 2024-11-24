@@ -1,12 +1,32 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-schedule',
   standalone: true,
-  imports: [],
+  imports: [CommonModule, HttpClientModule],
   templateUrl: './schedule.component.html',
-  styleUrl: './schedule.component.css'
+  styleUrls: ['./schedule.component.css']
 })
-export class ScheduleComponent {
+export class ScheduleComponent implements OnInit {
+  slots: any[] = [];
 
+  constructor(private http: HttpClient) {}
+
+  ngOnInit(): void {
+    this.fetchSlotsWithUsernames();
+  }
+
+  fetchSlotsWithUsernames() {
+    this.http.get<any[]>('http://localhost:6300/slots-with-users')
+      .subscribe({
+        next: data => {
+          this.slots = data;
+        },
+        error: err => {
+          console.error('Error fetching slots with usernames:', err);
+        }
+      });
+  }
 }

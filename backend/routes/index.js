@@ -4,6 +4,7 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const eventController = require('../controllers/eventController')
 const userController = require('../controllers/userController')
+const slotController = require('../controllers/slotController')
 const authMiddleware = require('../middleware/authMiddleware');
 const swaggerSpec = require('../swaggerConfig')
 const swaggerUi = require('swagger-ui-express');
@@ -490,5 +491,237 @@ router.put('/users/:id', userController.updateUser);
  *         description: Internal Server Error.
  */
 router.delete('/users/:id', userController.deleteUser);
+
+/**
+ * @swagger
+ * /slots:
+ *   get:
+ *     summary: Get all slots
+ *     description: Retrieve a list of all available slots.
+ *     tags: [Slots]
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved slots.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   slot_date:
+ *                     type: string
+ *                     format: date
+ *                   max_capacity:
+ *                     type: integer
+ *                   user_ids:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                   comment:
+ *                     type: string
+ *       500:
+ *         description: Internal Server Error.
+ */
+router.get('/slots/', slotController.getSlots);
+
+/**
+ * @swagger
+ * /slots-with-users:
+ *   get:
+ *     summary: Get all slots with user names instead of ids
+ *     description: Retrieve a list of all available slots with usernames.
+ *     tags: [Slots]
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved slots.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   slot_date:
+ *                     type: string
+ *                     format: date
+ *                   max_capacity:
+ *                     type: integer
+ *                   user_ids:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                   comment:
+ *                     type: string
+ *       500:
+ *         description: Internal Server Error.
+ */
+router.get('/slots-with-users/', slotController.getSlotsWithUsernames);
+
+/**
+ * @swagger
+ * /slots/user/{userId}:
+ *   get:
+ *     summary: Get slots for a specific user
+ *     description: Retrieve all slots that are reserved by a specific user, based on their user ID.
+ *     tags: [Slots]
+ *     parameters:
+ *       - name: userId
+ *         in: path
+ *         required: true
+ *         description: ID of the user to find the reserved slots.
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user's slots.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   slot_date:
+ *                     type: string
+ *                     format: date
+ *                   max_capacity:
+ *                     type: integer
+ *                   user_ids:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                   comment:
+ *                     type: string
+ *       404:
+ *         description: User has no reserved slots.
+ *       500:
+ *         description: Internal Server Error.
+ */
+router.get('/slots/user/:userId', slotController.getSlotsByUserID);
+
+/**
+ * @swagger
+ * /slots/range:
+ *   get:
+ *     summary: Get slots in a date range
+ *     description: Retrieve all slots within a specified date range.
+ *     tags: [Slots]
+ *     parameters:
+ *       - name: startDate
+ *         in: query
+ *         required: true
+ *         description: Start date of the range.
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - name: endDate
+ *         in: query
+ *         required: true
+ *         description: End date of the range.
+ *         schema:
+ *           type: string
+ *           format: date
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved slots within the date range.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   slot_date:
+ *                     type: string
+ *                     format: date
+ *                   max_capacity:
+ *                     type: integer
+ *                   user_ids:
+ *                     type: array
+ *                     items:
+ *                       type: string
+ *                   comment:
+ *                     type: string
+ *       400:
+ *         description: Invalid date range or missing parameters.
+ *       500:
+ *         description: Internal Server Error.
+ */
+router.get('/slots/range', slotController.getSlotsInDateRange);
+
+/**
+ * @swagger
+* /slots/{slotId}/reserve:
+ *   put:
+ *     summary: Reserve a slot
+ *     description: Allows a user to reserve a slot for a specific date.
+ *     tags: [Slots]
+ *     parameters:
+ *       - name: slotId
+ *         in: path
+ *         required: true
+ *         description: ID of the slot to reserve.
+ *         schema:
+ *           type: integer
+ *       - name: userId
+ *         in: query
+ *         required: true
+ *         description: ID of the user reserving the slot.
+ *         schema:
+ *           type: integer
+ *       - name: comment
+ *         in: query
+ *         required: false
+ *         description: Optional comment for the reservation.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Slot reserved successfully.
+ *       400:
+ *         description: Slot is fully booked or invalid user ID.
+ *       500:
+ *         description: Internal Server Error.
+ */
+router.put('/slots/:slotId/reserve', slotController.reserveSlot);
+
+/**
+ * @swagger
+* /slots/{slotId}/unreserve:
+ *   put:
+ *     summary: Unreserve a slot
+ *     description: Allows a user to cancel their reservation from a slot.
+ *     tags: [Slots]
+ *     parameters:
+ *       - name: slotId
+ *         in: path
+ *         required: true
+ *         description: ID of the slot to unreserve.
+ *         schema:
+ *           type: integer
+ *       - name: userId
+ *         in: query
+ *         required: true
+ *         description: ID of the user removing their reservation.
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: User removed from the slot successfully.
+ *       404:
+ *         description: Slot or user not found, or the user is not reserved for this slot.
+ *       500:
+ *         description: Internal Server Error.
+ */
+router.put('/slots/:slotId/unreserve', slotController.unreserveSlot);
 
 module.exports = router;
