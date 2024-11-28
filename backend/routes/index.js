@@ -560,7 +560,7 @@ router.get('/slots/', slotController.getSlots);
  *       500:
  *         description: Internal Server Error.
  */
-router.get('/slots-with-users/', slotController.getSlotsWithUsernames);
+router.get('/slots-for-current-month/', slotController.getSlotsForCurrentMonth);
 
 /**
  * @swagger

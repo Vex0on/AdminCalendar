@@ -11,6 +11,7 @@ import { CommonModule } from '@angular/common';
 })
 export class ScheduleComponent implements OnInit {
   slots: any[] = [];
+  today: Date = new Date();
 
   constructor(private http: HttpClient) {}
 
@@ -19,7 +20,7 @@ export class ScheduleComponent implements OnInit {
   }
 
   fetchSlotsWithUsernames() {
-    this.http.get<any[]>('http://localhost:6300/slots-with-users')
+    this.http.get<any[]>('http://localhost:6300/slots-for-current-month')
       .subscribe({
         next: data => {
           this.slots = data;
