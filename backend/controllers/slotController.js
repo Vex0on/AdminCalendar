@@ -38,11 +38,16 @@ const getSlotsInDateRange = async (req, res) => {
     }
 };
 
-const getSlotsForCurrentMonth = async (req, res) => {
+const getSlotsForMonth = async (req, res) => {
+    const { year, month } = req.query;
+
+    if (!year || !month) {
+        return res.status(400).json({ error: 'Year and month are required' });
+    }
+
     try {
-        const currentDate = new Date();
-        const startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-        const endDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+        const startDate = new Date(year, month - 1, 1);
+        const endDate = new Date(year, month, 0);
 
         const slotsResult = await pool.query(
             'SELECT * FROM slots WHERE slot_date BETWEEN $1 AND $2',
@@ -50,12 +55,7 @@ const getSlotsForCurrentMonth = async (req, res) => {
         );
         const slots = slotsResult.rows;
 
-        const allUserIds = [
-            ...new Set([
-                ...slots.flatMap(slot => slot.user_ids || []),
-                ...Object.keys(slots.flatMap(slot => slot.comments || {})).map(Number)
-            ])
-        ];
+        const allUserIds = [...new Set(slots.flatMap(slot => slot.user_ids || []))];
 
         let usersMap = {};
         if (allUserIds.length > 0) {
@@ -66,26 +66,17 @@ const getSlotsForCurrentMonth = async (req, res) => {
             usersMap = Object.fromEntries(usersResult.rows.map(user => [user.id, user.username]));
         }
 
-        const enrichedSlots = slots.map(slot => {
-            const comments = {};
-            for (const [userId, comment] of Object.entries(slot.comments || {})) {
-                const username = usersMap[userId] || 'Unknown User';
-                comments[username] = comment;
-            }
-
-            return {
-                ...slot,
-                users: (slot.user_ids || []).map(userId => ({
-                    id: userId,
-                    username: usersMap[userId] || 'Unknown User'
-                })),
-                comments
-            };
-        });
+        const enrichedSlots = slots.map(slot => ({
+            ...slot,
+            users: (slot.user_ids || []).map(userId => ({
+                id: userId,
+                username: usersMap[userId] || 'Unknown User'
+            }))
+        }));
 
         res.json(enrichedSlots);
     } catch (error) {
-        console.error('Error fetching slots for current month:', error);
+        console.error('Error fetching slots for month:', error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
@@ -167,4 +158,4 @@ const unreserveSlot = async (req, res) => {
 };
 
 
-module.exports = { getSlots, getSlotsByUserID, getSlotsInDateRange, reserveSlot, unreserveSlot, getSlotsForCurrentMonth };
+module.exports = { getSlots, getSlotsByUserID, getSlotsInDateRange, reserveSlot, unreserveSlot, getSlotsForMonth };

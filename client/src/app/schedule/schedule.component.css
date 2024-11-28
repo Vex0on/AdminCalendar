@@ -1,32 +1,67 @@
+/* Ogólne style dla harmonogramu */
 .schedule {
-    padding: 20px;
-    font-family: Arial, sans-serif;
-  }
-  
-  .slots-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-  }
-  
-  .slot-box {
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    padding: 10px;
-    width: 200px;
-    background-color: #f9f9f9;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .slot-box p {
-    margin: 5px 0;
-    font-size: 14px;
-  }
-  
-  .slot-box ul {
-    padding: 0;
-    margin: 0;
-    list-style: none;
-    font-size: 14px;
-  }
-  
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+/* Kontener na sloty */
+.slots-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* Styl dla pojedynczego slotu */
+.slot-box {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  width: 200px;
+  background-color: #f9f9f9;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Domyślny styl dla paragrafów w slot-box */
+.slot-box p {
+  margin: 5px 0;
+  font-size: 14px;
+}
+
+/* Styl dla listy użytkowników i komentarzy */
+.slot-box ul {
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  font-size: 14px;
+}
+
+/* Nagłówek dla slotu - data i dzień tygodnia */
+.slot-box .slot-header {
+  text-align: center;
+  font-weight: bold;
+  font-size: 20px !important;
+  margin-bottom: 10px;
+}
+
+/* Nawigacja między miesiącami */
+.navigation {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+/* Styl dla przycisków nawigacyjnych */
+.navigation button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+/* Styl dla przycisków po najechaniu */
+.navigation button:hover {
+  background-color: #0056b3;
+}

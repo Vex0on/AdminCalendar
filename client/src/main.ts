@@ -1,12 +1,15 @@
 import { bootstrapApplication } from '@angular/platform-browser';
-import { appConfig } from './app/app.config';
 import { AppComponent } from './app/app.component';
-import { FormsModule } from '@angular/forms';
-import { NgModule } from '@angular/core';
-import { LoginComponent } from './app/login/login.component';
+import { LOCALE_ID } from '@angular/core';
+import { CommonModule, registerLocaleData } from '@angular/common';
+import localePl from '@angular/common/locales/pl'; 
+import { appConfig } from './app/app.config';
 
-// bootstrapApplication(AppComponent, appConfig)
-//   .catch((err) => console.error(err));
+registerLocaleData(localePl);
 
-bootstrapApplication(AppComponent, appConfig)
-  .catch((err) => console.error(err));
+bootstrapApplication(AppComponent, {
+  providers: [
+    ...appConfig.providers, 
+    { provide: LOCALE_ID, useValue: 'pl' } 
+  ]
+}).catch((err) => console.error(err));

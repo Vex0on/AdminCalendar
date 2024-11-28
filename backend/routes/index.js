@@ -529,10 +529,10 @@ router.get('/slots/', slotController.getSlots);
 
 /**
  * @swagger
- * /slots-with-users:
+ * /slots-for-month:
  *   get:
  *     summary: Get all slots with user names instead of ids
- *     description: Retrieve a list of all available slots with usernames.
+ *     description: Retrieve a list of all available slots with usernames instead of user ids.
  *     tags: [Slots]
  *     responses:
  *       200:
@@ -551,16 +551,24 @@ router.get('/slots/', slotController.getSlots);
  *                     format: date
  *                   max_capacity:
  *                     type: integer
- *                   user_ids:
+ *                   users:
  *                     type: array
  *                     items:
+ *                       type: object
+ *                       properties:
+ *                         id:
+ *                           type: integer
+ *                         username:
+ *                           type: string
+ *                   comments:
+ *                     type: object
+ *                     additionalProperties:
  *                       type: string
- *                   comment:
- *                     type: string
  *       500:
  *         description: Internal Server Error.
  */
-router.get('/slots-for-current-month/', slotController.getSlotsForCurrentMonth);
+router.get('/slots-for-month', slotController.getSlotsForMonth);
+
 
 /**
  * @swagger

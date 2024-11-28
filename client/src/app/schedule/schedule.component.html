@@ -1,8 +1,12 @@
 <div class="schedule">
-  <h1>Sloty w {{ today | date:'MMMM yyyy' }}</h1>
+  <h1>Harmonogram z {{ currentDate | date:'MMMM yyyy' }}</h1>
+  <div class="navigation">
+    <button (click)="goToPreviousMonth()">← Poprzedni miesiąc</button>
+    <button (click)="goToNextMonth()">Następny miesiąc →</button>
+  </div>
   <div class="slots-container">
     <div *ngFor="let slot of slots" class="slot-box">
-      <p><strong>Data:</strong> {{ slot.slot_date | date }}</p>
+      <p class="slot-header">{{ slot.slot_date | date:'dd' }} - {{ slot.slot_date | date:'EEEE' }}</p>
       <p><strong>Admin:</strong></p>
       <ul>
         <li *ngFor="let user of slot.users">
