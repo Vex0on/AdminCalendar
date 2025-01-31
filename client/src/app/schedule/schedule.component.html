@@ -1,24 +1,90 @@
 <div class="schedule">
-  <h1>Harmonogram z {{ currentDate | date:'MMMM yyyy' }}</h1>
+  <h1 class="schedule-header">Harmonogram z {{ currentDate | date:'MMMM yyyy' }}</h1>
   <div class="navigation">
-    <button (click)="goToPreviousMonth()">← Poprzedni miesiąc</button>
-    <button (click)="goToNextMonth()">Następny miesiąc →</button>
+    <button (click)="changeMonth(-1)">← Poprzedni miesiąc</button>
+    <button (click)="changeMonth(1)">Następny miesiąc →</button>
   </div>
   <div class="slots-container">
-    <div *ngFor="let slot of slots" class="slot-box">
+    <div *ngFor="let slot of slots" class="slot-box" (click)="openSlotModal(slot)">
       <p class="slot-header">{{ slot.slot_date | date:'dd' }} - {{ slot.slot_date | date:'EEEE' }}</p>
+      <div *ngIf="slot.events && slot.events.length > 0">
+        <p><strong>Eventy:</strong></p>
+        <ul>
+          <li *ngFor="let event of slot.events">
+            {{ event.description }}
+          </li>
+        </ul>
+      </div>
       <p><strong>Admin:</strong></p>
-      <ul>
-        <li *ngFor="let user of slot.users">
+      <div *ngIf="slot.users && slot.users.length > 0">
+        <p *ngFor="let user of slot.users">
           {{ user.username }} (ID: {{ user.id }})
-        </li>
-      </ul>
+        </p>
+      </div>
+      <p *ngIf="!slot.users || slot.users.length === 0"></p>
       <p><strong>Komentarz:</strong></p>
-      <ul>
-        <li *ngFor="let comment of slot.comments | keyvalue">
-          {{ comment.key }}: {{ comment.value || 'Brak komentarza' }}
-        </li>
-      </ul>
+      <div *ngIf="slot.comments && getCommentKeys(slot.comments).length > 0">
+        <p *ngFor="let commentKey of getCommentKeys(slot.comments)">
+          {{ commentKey }}: {{ slot.comments[commentKey] || 'Brak komentarza' }}
+        </p>
+      </div>
+      <p *ngIf="!slot.comments || getCommentKeys(slot.comments).length === 0"></p>
     </div>
+  </div>
+</div>
+
+<!-- Modal do edycji -->
+<div class="modal" *ngIf="isModalOpen">
+  <div class="modal-content">
+    <h2>Dane slotu</h2>
+    <p><strong>Data:</strong> {{ selectedSlot.slot_date | date:'dd.MM.yyyy' }}</p>
+
+    <p><strong>Eventy:</strong></p>
+    <div *ngIf="isEditing">
+      <div *ngFor="let event of selectedSlot.events; let i = index">
+        <select [(ngModel)]="selectedSlot.events[i].id" (ngModelChange)="onEventChange($event, i)">
+          <option *ngFor="let availableEvent of availableEvents" [ngValue]="availableEvent.id">
+            {{ availableEvent.description }}
+          </option>
+        </select>
+      </div>
+    </div>
+    <div *ngIf="!isEditing">
+      <p *ngFor="let event of selectedSlot.events">
+        {{ event.description }}
+      </p>
+    </div>
+
+    <p><strong>Admin:</strong></p>
+    <div *ngIf="isEditing">
+      <div *ngFor="let user of selectedSlot.users; let i = index">
+        <select [(ngModel)]="selectedSlot.users[i].id">
+          <option *ngFor="let availableUser of availableUsers" [value]="availableUser.id">
+            {{ availableUser.username }}
+          </option>
+        </select>
+      </div>
+    </div>
+    <div *ngIf="!isEditing">
+      <p *ngFor="let user of selectedSlot.users">
+        {{ user.username }} (ID: {{ user.id }})
+      </p>
+    </div>
+
+    <p><strong>Komentarz:</strong></p>
+    <div *ngIf="isEditing">
+      <div *ngFor="let commentKey of getCommentKeys(selectedSlot.comments)">
+        <input [(ngModel)]="selectedSlot.comments[commentKey]" placeholder="Wpisz komentarz">
+      </div>
+    </div>
+    <div *ngIf="!isEditing">
+      <p *ngFor="let commentKey of getCommentKeys(selectedSlot.comments)">
+        {{ commentKey }}: {{ selectedSlot.comments[commentKey] || 'Brak komentarza' }}
+      </p>
+    </div>
+
+    <button (click)="closeModal()">Zamknij</button>
+    <button *ngIf="!isEditing && selectedSlot.users.length > 0 && selectedSlot.events.length > 0" (click)="enableEditing()">Edytuj</button>
+    <button *ngIf="isEditing" (click)="saveChanges()">Zapisz zmiany</button>
   </div>
 </div>

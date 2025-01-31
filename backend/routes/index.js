@@ -494,6 +494,68 @@ router.delete('/users/:id', userController.deleteUser);
 
 /**
  * @swagger
+ * /slots/{slotId}/events/{eventId}:
+ *   post:
+ *     summary: Add an existing event to a slot
+ *     description: Assigns an existing event to a specific slot.
+ *     tags: [Slots]
+ *     parameters:
+ *       - in: path
+ *         name: slotId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the slot
+ *       - in: path
+ *         name: eventId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the event to add
+ *     responses:
+ *       200:
+ *         description: Event successfully added to slot.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 events:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: integer
+ *                       type:
+ *                         type: string
+ *                       urgency:
+ *                         type: integer
+ *                       game:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *                       datestart:
+ *                         type: string
+ *                         format: date
+ *                       dateend:
+ *                         type: string
+ *                         format: date
+ *                       partner:
+ *                         type: boolean
+ *       400:
+ *         description: Event already assigned to this slot.
+ *       404:
+ *         description: Slot or event not found.
+ *       500:
+ *         description: Internal Server Error.
+ */
+router.post('/slots/:slotId/events/:eventId', slotController.addEventToSlot);
+
+/**
+ * @swagger
  * /slots:
  *   get:
  *     summary: Get all slots
@@ -531,9 +593,22 @@ router.get('/slots/', slotController.getSlots);
  * @swagger
  * /slots-for-month:
  *   get:
- *     summary: Get all slots with user names instead of ids
- *     description: Retrieve a list of all available slots with usernames instead of user ids.
+ *     summary: Get all slots for a specific month and year with user names instead of ids
+ *     description: Retrieve a list of all available slots for a given month and year with usernames instead of user ids.
  *     tags: [Slots]
+ *     parameters:
+ *       - in: query
+ *         name: year
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The year for which to retrieve slots (e.g., 2025).
+ *       - in: query
+ *         name: month
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: The month for which to retrieve slots (1-12).
  *     responses:
  *       200:
  *         description: Successfully retrieved slots.
@@ -564,6 +639,8 @@ router.get('/slots/', slotController.getSlots);
  *                     type: object
  *                     additionalProperties:
  *                       type: string
+ *       400:
+ *         description: Bad request (invalid or missing parameters).
  *       500:
  *         description: Internal Server Error.
  */
@@ -668,6 +745,87 @@ router.get('/slots/range', slotController.getSlotsInDateRange);
 
 /**
  * @swagger
+ * /slots/{slotId}/edit:
+ *   put:
+ *     summary: Edit a slot
+ *     description: Allows updating users, events, and comments for a specific slot. Event details will be fetched from the database based on event IDs.
+ *     tags: [Slots]
+ *     parameters:
+ *       - in: path
+ *         name: slotId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: ID of the slot to edit
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               userIds:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 description: List of user IDs assigned to the slot. If not provided, existing users will remain unchanged.
+ *               events:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                       description: The ID of the event to associate with the slot. Other event details (e.g., description) will be fetched from the database.
+ *                 description: List of events to be associated with the slot. If not provided, existing events will remain unchanged.
+ *               comments:
+ *                 type: object
+ *                 additionalProperties:
+ *                   type: string
+ *                 description: A dictionary of comments, keyed by user ID. If not provided, existing comments will remain unchanged.
+ *     responses:
+ *       200:
+ *         description: Slot successfully updated.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 updatedSlot:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: integer
+ *                     user_ids:
+ *                       type: array
+ *                       items:
+ *                         type: integer
+ *                     events:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: integer
+ *                           description:
+ *                             type: string
+ *                     comments:
+ *                       type: object
+ *                       additionalProperties:
+ *                         type: string
+ *       400:
+ *         description: Bad request due to invalid input or missing parameters.
+ *       404:
+ *         description: Slot not found.
+ *       500:
+ *         description: Internal Server Error.
+ */
+router.put('/slots/:slotId/edit', slotController.editSlot);
+
+/**
+ * @swagger
 * /slots/{slotId}/reserve:
  *   put:
  *     summary: Reserve a slot
@@ -731,5 +889,36 @@ router.put('/slots/:slotId/reserve', slotController.reserveSlot);
  *         description: Internal Server Error.
  */
 router.put('/slots/:slotId/unreserve', slotController.unreserveSlot);
+
+/**
+ * @swagger
+ * /slots/{slotId}/events/{eventId}:
+ *   delete:
+ *     summary: Remove an event from a slot
+ *     description: Remove an event by its ID from a specific slot.
+ *     tags: [Slots]
+ *     parameters:
+ *       - name: slotId
+ *         in: path
+ *         description: The ID of the slot
+ *         required: true
+ *         schema:
+ *           type: integer
+ *       - name: eventId
+ *         in: path
+ *         description: The ID of the event to be removed
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Event successfully removed from the slot
+ *       404:
+ *         description: Slot or Event not found
+ *       500:
+ *         description: Internal Server Error
+ */
+router.delete('/slots/:slotId/events/:eventId', slotController.removeEventFromSlot);
+
 
 module.exports = router;
